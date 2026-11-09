@@ -5,7 +5,7 @@ def criptografia_aes():
 
     # 1. Generar la llave maestra 
     llave = Fernet.generate_key()
-    f = Fernte(llave)
+    f = Fernet(llave)
     print(f"Lllave maestrra generada (mantener en secreto): {llave.decode()}")
 
     # 2. Datos a proteger 
