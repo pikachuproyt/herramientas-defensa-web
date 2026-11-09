@@ -1,4 +1,4 @@
-from cryptography.fernet import Fernet+
+from cryptography.fernet import Fernet
 
 def criptografia_aes():
     print("--- Herramienta de Criptografia Bidireccional (AES)---")
