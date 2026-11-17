@@ -1,0 +1,663 @@
+<title>Escudo Digital 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: ficha de laboratorio en modo oscuro. Hero con grilla y reloj de exposición en escala logarítmica,
+   gráficas conmutables, tarjetas expandibles, simulador de consecuencias, guía con checklist y quiz. */
+:root{
+  --bg:#0A0620; --surface:#140D33; --surface-2:#1E1553; --line:#352A7E;
+  --fg:#F4F1FF; --muted:#B4ACE0; --grid:rgba(155,107,255,.11); --nav-bg:rgba(10,6,32,.94);
+  --pink:#FF2E93; --cyan:#19E3FF; --lime:#C8FF3C; --orange:#FFA41B; --violet:#9B6BFF;
+  --font-display:'Bricolage Grotesque','Arial Black',system-ui,sans-serif;
+  --font-body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--nav-bg)}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.015em;line-height:1.08}
+p{margin:0}
+a{color:var(--cyan)}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:700 12px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--lime)}
+.muted{color:var(--muted)}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--nav-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.navin{display:flex;align-items:center;gap:20px;height:56px}
+.brand{display:flex;align-items:center;gap:10px;font:800 18px var(--font-display);color:var(--fg);text-decoration:none;flex:none}
+.brand i{width:14px;height:14px;border-radius:4px;background:var(--pink);box-shadow:5px 5px 0 var(--cyan)}
+.links{display:flex;gap:4px;overflow-x:auto;min-width:0;scrollbar-width:none}
+.links::-webkit-scrollbar{display:none}
+.links a{padding:8px 12px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:500;font-size:14px;white-space:nowrap}
+.links a:hover{color:var(--fg);background:var(--surface-2)}
+.links a.on{color:var(--bg);background:var(--lime)}
+
+/* hero */
+.hero{padding-block:56px 40px;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center}
+h1{font-size:clamp(2.3rem,6.2vw,4.5rem);font-weight:800;margin-top:18px}
+mark{background:var(--lime);color:var(--bg);padding:0 .14em;border-radius:.14em}
+mark.p{background:var(--pink)}
+.lede{margin-top:20px;font-size:1.125rem;color:var(--muted);max-width:56ch}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;border-radius:12px;border:2px solid var(--pink);background:var(--pink);color:var(--bg);font-weight:700;font-size:15px;text-decoration:none;cursor:pointer;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--cyan)}
+.btn.lime{background:var(--lime);border-color:var(--lime)}
+.clock{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.clock h2{font-size:1.15rem}
+.clock .sub{font-size:13px;color:var(--muted);margin-top:4px}
+.crow{margin-top:18px}
+.crow .t{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.crow .t b{font:700 14px var(--font-mono);white-space:nowrap}
+.ctrack{height:14px;border-radius:7px;background:var(--surface-2);margin-top:8px;overflow:hidden}
+.cfill{display:block;height:100%;border-radius:7px;transform-origin:left;animation:grow 1.1s cubic-bezier(.2,.8,.2,1) both}
+.axis{position:relative;height:18px;margin-top:14px;border-top:1px dashed var(--line)}
+.axis span{position:absolute;top:4px;transform:translateX(-50%);font:500 11px var(--font-mono);color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:40px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tile b{display:block;font:800 clamp(1.7rem,3.4vw,2.4rem)/1 var(--font-display)}
+.tile span{display:block;margin-top:8px;font-size:14px;color:var(--muted)}
+@keyframes grow{from{transform:scaleX(0)}}
+
+/* sections */
+section{padding-block:72px}
+.band{background:var(--surface);border-block:1px solid var(--line)}
+.sh{display:flex;flex-direction:column;gap:12px;margin-bottom:32px;max-width:70ch}
+.sh h2{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:800}
+.sh p{color:var(--muted);font-size:1.0625rem}
+
+/* charts */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.tab{flex:none;min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:transparent;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.tab:hover{border-color:var(--cyan)}
+.tab[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bg)}
+.tab small{font:700 11px var(--font-mono);margin-left:6px;opacity:.85}
+.chart{margin-top:18px;background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:24px}
+.chart h3{font-size:1.4rem}
+.chart .sub{color:var(--muted);font-size:14px;margin-top:4px}
+#chartStage{margin-top:22px}
+.donut{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:32px;align-items:center}
+.dwrap{position:relative;width:100%;max-width:300px;aspect-ratio:1;margin:0 auto}
+.dwrap svg{width:100%;height:100%;display:block}
+.seg{cursor:pointer;transition:stroke-width .2s,opacity .2s;animation:seg 1s cubic-bezier(.2,.8,.2,1) both}
+.seg.on{stroke-width:18}
+.seg.dim{opacity:.32}
+@keyframes seg{from{stroke-dasharray:0 100}}
+.dcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 22%;pointer-events:none}
+.dcenter strong{font:800 clamp(1.6rem,4vw,2.3rem)/1 var(--font-display)}
+.dcenter span{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.25}
+.legend{display:flex;flex-direction:column;gap:8px}
+.leg{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.leg i{width:14px;height:14px;border-radius:4px;flex:none}
+.leg span{flex:1;min-width:0}
+.leg b{font:700 14px var(--font-mono);white-space:nowrap}
+.leg.on{border-color:var(--fg);background:var(--surface-2)}
+.bars{display:flex;flex-direction:column;gap:10px}
+.br{width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.br.on{border-color:var(--fg);background:var(--surface-2)}
+.br-top{display:flex;justify-content:space-between;gap:16px;font-size:15px}
+.br-top b{font:700 14px var(--font-mono);white-space:nowrap}
+.br-track{display:block;height:16px;border-radius:8px;background:var(--bg);margin-top:10px;overflow:hidden}
+.br-fill{display:block;height:100%;border-radius:8px;transform-origin:left;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.insight{margin-top:22px;padding:16px 18px;border-radius:12px;background:var(--surface-2);display:grid;gap:8px}
+.insight #chartNote{font-weight:500}
+.insight #chartInsight{color:var(--muted);font-size:15px}
+.src{margin-top:12px;font:500 12px var(--font-mono);color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:28px}
+.fact{padding:18px;border-radius:14px;border:1px solid var(--line);background:var(--bg)}
+.fact .k{font:700 11px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
+.fact b{display:block;font:800 1.9rem/1.1 var(--font-display);margin-top:8px}
+.fact p{margin-top:6px;font-size:14px;color:var(--muted)}
+
+/* ataques */
+.tools{display:flex;justify-content:flex-end;margin-bottom:14px}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:16px;align-items:start}
+.atk{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.atk[open]{border-color:var(--fg)}
+.atk summary{list-style:none;cursor:pointer;padding:20px;display:grid;gap:10px}
+.atk summary::-webkit-details-marker{display:none}
+.chip{justify-self:start;padding:5px 10px;border-radius:999px;font:700 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--bg)}
+.atk h3{font-size:1.35rem}
+.astat{display:flex;align-items:baseline;gap:10px}
+.astat b{font:800 2rem/1 var(--font-display)}
+.astat span{font-size:13px;color:var(--muted);min-width:0}
+.more{font:700 12px var(--font-mono);color:var(--cyan)}
+.atk[open] .more::after{content:" ▲"}
+.atk:not([open]) .more::after{content:" ▼"}
+.abody{padding:0 20px 22px;display:grid;gap:14px;font-size:15px}
+.abody h4{margin:0 0 4px;font:700 11px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
+.abody .def{padding:12px 14px;border-radius:10px;background:var(--surface-2)}
+.abody .go{justify-self:start;background:none;border:0;padding:0;color:var(--lime);font-weight:700;cursor:pointer;text-decoration:underline}
+
+/* riesgos */
+.sim{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:20px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600}
+.opt:hover{border-color:var(--pink)}
+.opt[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:var(--bg)}
+.panel{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel .lab{font:700 12px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--pink)}
+.panel .big{font:800 clamp(2.6rem,7vw,4.6rem)/1 var(--font-display);color:var(--lime)}
+.panel .bl{color:var(--muted);margin-top:-6px}
+.panel p.t{font-size:1.0625rem}
+
+/* guia */
+.meter{display:grid;gap:10px;margin-bottom:24px;padding:18px 20px;border-radius:14px;border:1px solid var(--line);background:var(--bg)}
+.mtop{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.mtop b{font:800 1.6rem/1 var(--font-display)}
+.mtrack{height:14px;border-radius:7px;background:var(--surface-2);overflow:hidden}
+.mfill{display:block;height:100%;width:0;border-radius:7px;background:var(--lime);transition:width .4s}
+.items{display:grid;gap:12px;margin-top:18px}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.item:has(input:checked){border-color:var(--lime);background:var(--surface-2)}
+.item input{width:22px;height:22px;margin-top:2px;accent-color:var(--lime);cursor:pointer}
+.item b{display:block;font-size:1.05rem}
+.item span{display:block;color:var(--muted);font-size:15px;margin-top:4px}
+.rule{margin-top:48px}
+.rule h3{font-size:1.5rem}
+.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px}
+.rcard{padding:18px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);text-align:center}
+.rcard b{display:block;font:800 3rem/1 var(--font-display)}
+.rcard span{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
+.tablewrap{overflow-x:auto;margin-top:18px;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:14px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 11px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--orange);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{font:800 1.2rem var(--font-display);color:var(--lime)}
+td.plazo{font:700 13px var(--font-mono);white-space:nowrap;color:var(--cyan)}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px}
+.qtop{display:flex;justify-content:space-between;gap:12px;font:700 13px var(--font-mono);color:var(--muted)}
+.qtrack{height:8px;border-radius:4px;background:var(--surface-2);margin-top:10px;overflow:hidden}
+.qfill{display:block;height:100%;background:var(--cyan);transition:width .3s}
+.quiz h3{font-size:clamp(1.3rem,3vw,1.75rem);margin-top:24px;outline:none}
+.qopts{display:grid;gap:10px;margin-top:20px}
+.qopt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:var(--bg);cursor:pointer;font-size:16px}
+.qopt:hover:not(:disabled){border-color:var(--cyan)}
+.qopt .l{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--surface-2);font:700 13px var(--font-mono)}
+.qopt.ok{border-color:var(--lime);background:rgba(200,255,60,.12)}
+.qopt.ok .l{background:var(--lime);color:var(--bg)}
+.qopt.bad{border-color:var(--pink);background:rgba(255,46,147,.14)}
+.qopt.bad .l{background:var(--pink);color:var(--bg)}
+.qopt:disabled{cursor:default;color:var(--fg)}
+.fb{margin-top:18px;padding:16px 18px;border-radius:12px;background:var(--surface-2);display:grid;gap:6px}
+.fb b.ok{color:var(--lime)} .fb b.bad{color:var(--pink)}
+.qnext{margin-top:18px}
+.score{font:800 clamp(3rem,10vw,5.5rem)/1 var(--font-display);color:var(--lime)}
+.tier{font:800 1.6rem var(--font-display);margin-top:8px}
+.review{display:grid;gap:10px;margin-top:22px}
+.rev{padding:14px 16px;border-radius:12px;border:1px solid var(--pink);background:var(--bg);font-size:15px}
+.rev b{display:block;margin-bottom:4px}
+
+footer{padding-block:48px;border-top:1px solid var(--line)}
+footer h3{font-size:1.1rem}
+footer ul{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:8px 24px;font-size:14px}
+footer .fine{margin-top:24px;font-size:13px;color:var(--muted)}
+
+@media (max-width:860px){
+  .hero-grid,.sim{grid-template-columns:minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .donut{grid-template-columns:minmax(0,1fr)}
+  .rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  section{padding-block:52px}
+  .chart,.quiz{padding:18px}
+}
+@media (max-width:520px){
+  .brand span{display:none}
+  .tiles{gap:10px}
+  .tile{padding:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+<header class="nav">
+  <div class="wrap navin">
+    <a class="brand" href="#inicio"><i></i><span>Escudo Digital</span></a>
+    <nav class="links" aria-label="Secciones">
+      <a href="#panorama">Panorama</a><a href="#ataques">Ataques</a><a href="#riesgos">Riesgos</a><a href="#guia">Guía</a><a href="#quiz">Quiz</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section id="inicio" class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">Reporte 2025–2026 · Verizon · IBM · Microsoft · ENISA · CIS</p>
+        <h1>Ellos atacan en <mark>horas</mark>. Tú reaccionas en <mark class="p">43 días</mark>.</h1>
+        <p class="lede">Una guía interactiva con los ciberataques más frecuentes, lo que cuesta no estar informado y los controles que sí funcionan para proteger tus cuentas, tus datos y tu empresa.</p>
+        <div class="cta">
+          <a class="btn" href="#guia">Ver guía de prevención</a>
+          <a class="btn ghost" href="#quiz">Hacer el quiz</a>
+        </div>
+      </div>
+      <div class="clock" aria-label="Comparación de tiempos de ataque y remediación">
+        <h2>Reloj de exposición</h2>
+        <p class="sub">Escala logarítmica: cada marca multiplica el tiempo por 10.</p>
+        <div id="clock"></div>
+        <div class="axis" id="axis" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><b style="color:var(--pink)">USD 4.99 M</b><span>costo promedio global de una brecha de datos</span></div>
+      <div class="tile"><b style="color:var(--cyan)">31%</b><span>de las brechas empiezan explotando una vulnerabilidad</span></div>
+      <div class="tile"><b style="color:var(--orange)">88%</b><span>de las detonaciones de ransomware ocurren fuera del horario laboral</span></div>
+      <div class="tile"><b style="color:var(--lime)">86–89%</b><span>de las técnicas se neutralizan con las 56 salvaguardas básicas de CIS</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="panorama">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow">Panorama 2025–2026</p>
+      <h2>Los números detrás de los ataques</h2>
+      <p>Elige una gráfica. Pasa el cursor o toca cada elemento para ver el detalle.</p>
+    </div>
+    <div class="tabs" id="chartTabs"></div>
+    <div class="chart">
+      <h3 id="chartTitle"></h3>
+      <p class="sub" id="chartSub"></p>
+      <div id="chartStage"></div>
+      <div class="insight"><p id="chartNote"></p><p id="chartInsight"></p></div>
+      <p class="src" id="chartSrc"></p>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="k">España · INCIBE 2025</span><b>122,223</b><p>incidentes gestionados, 26% más que el año anterior.</p></div>
+      <div class="fact"><span class="k">América Latina · Kaspersky</span><b>1.1 M</b><p>intentos de ransomware en un año, unos dos por minuto.</p></div>
+      <div class="fact"><span class="k">México · ESET</span><b>312,000</b><p>intentos diarios de phishing. Segundo país de la región, con PDF maliciosos y suplantación de plataformas financieras y fiscales.</p></div>
+      <div class="fact"><span class="k">Fortinet · 2026</span><b>7,831</b><p>víctimas confirmadas de ransomware, 389% más que un año antes, impulsadas por kits con IA.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="ataques" class="band">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow">Los 7 ataques más frecuentes</p>
+      <h2>Cómo te encuentran y cómo se frenan</h2>
+      <p>Abre cada tarjeta para ver el caso real y la defensa principal.</p>
+    </div>
+    <div class="tools"><button class="btn ghost" id="toggleAll" type="button">Expandir todo</button></div>
+    <div class="agrid" id="agrid"></div>
+  </div>
+</section>
+
+<section id="riesgos">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow">Riesgos de no estar informado</p>
+      <h2>¿Qué pasa si te saltas un control?</h2>
+      <p>Elige un descuido común y mira qué le costó a otras personas y organizaciones.</p>
+    </div>
+    <div class="sim">
+      <div class="opts" id="opts"></div>
+      <div class="panel" id="panel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="guia" class="band">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow">Guía práctica de prevención</p>
+      <h2>Seis pilares para protegerte</h2>
+      <p>Marca cada control que ya aplicas. Empieza por el pilar 1: son hábitos que puedes adoptar hoy.</p>
+    </div>
+    <div class="meter">
+      <div class="mtop"><b id="mnum">0 de 17</b><span class="muted" id="mmsg"></span></div>
+      <div class="mtrack"><span class="mfill" id="mfill"></span></div>
+    </div>
+    <div class="tabs" id="ptabs"></div>
+    <div class="items" id="items"></div>
+
+    <div class="rule">
+      <h3>Regla de respaldo 3-2-1-1-0</h3>
+      <div class="rgrid">
+        <div class="rcard"><b style="color:var(--cyan)">3</b><span>copias de los datos críticos</span></div>
+        <div class="rcard"><b style="color:var(--lime)">2</b><span>medios de almacenamiento distintos</span></div>
+        <div class="rcard"><b style="color:var(--orange)">1</b><span>copia fuera de las instalaciones</span></div>
+        <div class="rcard"><b style="color:var(--pink)">1</b><span>copia inmutable (WORM) o desconectada, con credenciales separadas</span></div>
+        <div class="rcard"><b style="color:var(--violet)">0</b><span>errores, verificado con simulacros trimestrales de restauración</span></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Hoja de ruta de 180 días</h3>
+      <div class="tablewrap"><table id="road"></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow">Mini cuestionario</p>
+      <h2>¿Qué tanto aprendiste?</h2>
+      <p>Diez preguntas sobre ataques, riesgos y prevención. Al final verás qué repasar.</p>
+    </div>
+    <div class="quiz" id="quizBox"></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h3>Fuentes del reporte</h3>
+    <ul>
+      <li><a href="https://www.verizon.com/business/resources/T343/reports/2026-dbir-data-breach-investigations-report.pdf" target="_blank" rel="noopener">Verizon DBIR 2026</a></li>
+      <li><a href="https://newsroom.ibm.com/2026-02-25-ibm-2026-x-force-threat-index-ai-driven-attacks-are-escalating-as-basic-security-gaps-leave-enterprises-exposed" target="_blank" rel="noopener">IBM X-Force Threat Index 2026</a></li>
+      <li><a href="https://newsroom.ibm.com/2026-07-29-ibm-study-one-in-four-malicious-breaches-are-ai-enabled,-costing-companies-6-million-on-average" target="_blank" rel="noopener">IBM Cost of a Data Breach 2026</a></li>
+      <li><a href="https://www.microsoft.com/en-us/corporate-responsibility/topics/cybersecurity/reports/microsoft-digital-defense-report/" target="_blank" rel="noopener">Microsoft Digital Defense Report 2026</a></li>
+      <li><a href="https://www.cisecurity.org/about-us/media/press-release/cis-launches-updated-community-defense-model" target="_blank" rel="noopener">CIS Community Defense Model v3.0</a></li>
+      <li><a href="https://industrialcyber.co/reports/enisa-threat-landscape-2026-highlights-ransomware-vulnerability-exploitation-ai-enabled-attacks-across-eu-organizations/" target="_blank" rel="noopener">ENISA Threat Landscape 2026</a></li>
+      <li><a href="https://www.incibe.es/sites/default/files/2026-02/Balance%20de%20ciberseguridad%202025%20INCIBE/BalanceCiberseguridad2025_INCIBE.pdf" target="_blank" rel="noopener">INCIBE Balance de Ciberseguridad 2025</a></li>
+      <li><a href="https://latam.kaspersky.com/about/press-releases/ataques-de-ransomware-superan-11-millones-de-intentos-en-america-latina" target="_blank" rel="noopener">Kaspersky, ransomware en América Latina</a></li>
+      <li><a href="https://expansion.mx/tecnologia/2026/11/10/mexico-es-el-segundo-pais-con-mas-phishing?_amp=true" target="_blank" rel="noopener">ESET vía Expansión, phishing en México</a></li>
+      <li><a href="https://www.sophos.com/en-us/content/state-of-ransomware" target="_blank" rel="noopener">Sophos State of Ransomware 2026</a></li>
+      <li><a href="https://top10.owasp.org/2025/" target="_blank" rel="noopener">OWASP Top 10:2025</a></li>
+      <li><a href="https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-61r3.pdf" target="_blank" rel="noopener">NIST SP 800-61 Rev. 3</a></li>
+    </ul>
+    <p class="fine">Basado en el Reporte Ejecutivo de Ciberseguridad, noviembre de 2026. La categoría «Otros» de las gráficas de pastel es el porcentaje restante hasta completar 100%.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+
+/* ---------- Reloj de exposición ---------- */
+const CLOCK=[
+  {l:'Una carga expuesta en la nube recibe su primer ataque',h:5.3,d:'5.3 horas',c:'--cyan'},
+  {l:'Exploit funcional tras publicarse una falla',h:24,d:'&lt; 24 horas',c:'--lime'},
+  {l:'Tiempo mediano de una empresa para remediar',h:1032,d:'43 días',c:'--pink'}
+];
+const LMAX=Math.log10(1200);
+$('#clock').innerHTML=CLOCK.map(r=>`<div class="crow"><div class="t"><span>${r.l}</span><b>${r.d}</b></div><div class="ctrack"><span class="cfill" style="width:${(Math.log10(r.h)/LMAX*100).toFixed(1)}%;background:var(${r.c})"></span></div></div>`).join('');
+$('#axis').innerHTML=[[1,'1 h'],[10,'10 h'],[100,'100 h'],[1000,'1,000 h']].map(a=>`<span style="left:${(Math.log10(a[0])/LMAX*100).toFixed(1)}%">${a[1]}</span>`).join('');
+
+/* ---------- Gráficas ---------- */
+const DS=[
+ {t:'¿Cómo entran los atacantes?',s:'Acceso inicial en brechas confirmadas, 2026',src:'Verizon DBIR 2026 · 22,625 brechas en 145 países',type:'donut',
+  ins:'Por primera vez, explotar fallos conocidos supera al phishing. Parchar a tiempo pesa más que nunca.',
+  items:[
+   {l:'Explotación de vulnerabilidades',v:31,d:'31%',c:'--pink',n:'Primer lugar por primera vez como vector de acceso inicial.'},
+   {l:'Phishing',v:16,d:'16%',c:'--cyan',n:'Sigue siendo la puerta más usada para robar identidades.'},
+   {l:'Abuso de credenciales',v:13,d:'13%',c:'--lime',n:'Contraseñas robadas o reutilizadas, muchas por malware infostealer.'},
+   {l:'Otros vectores',v:40,d:'40%',c:'--violet',n:'Resto de las brechas hasta completar el 100%.'}]},
+ {t:'El precio de una brecha',s:'Costo promedio global, en millones de dólares',src:'IBM Cost of a Data Breach 2026 · 602 organizaciones',type:'bars',
+  ins:'La IA ya está presente en el 25% de las brechas maliciosas, 56% más que el año anterior.',
+  items:[
+   {l:'Brecha promedio',v:4.99,d:'USD 4.99 M',c:'--cyan',n:'Costo medio global de una brecha de datos.'},
+   {l:'Brecha con IA del atacante',v:6,d:'USD 6 M',c:'--pink',n:'El costo sube cuando los atacantes usan inteligencia artificial.'},
+   {l:'Ahorro con IA defensiva',v:2,d:'≈ USD 2 M',c:'--lime',n:'Las organizaciones que automatizan su defensa ahorran cerca de dos millones por incidente.'}]},
+ {t:'Incidentes en España',s:'Casos gestionados por INCIBE en 2025',src:'INCIBE Balance de Ciberseguridad 2025 · 122,223 incidentes (+26%)',type:'bars',
+  ins:'Además, el 85% de los equipos en redes botnet eran dispositivos del Internet de las Cosas.',
+  items:[
+   {l:'Malware',v:55411,d:'55,411',c:'--orange',n:'La categoría con más incidentes gestionados.'},
+   {l:'Fraude en línea',v:45445,d:'45,445',c:'--cyan',n:'Incluye los casos de phishing.'},
+   {l:'Phishing (dentro del fraude)',v:25133,d:'25,133',c:'--pink',n:'Más de la mitad del fraude en línea fue phishing.'}]},
+ {t:'Amenazas en la Unión Europea',s:'Tipo de incidente notificado, 2026',src:'ENISA Threat Landscape 2026',type:'donut',
+  ins:'El 73% de las víctimas fueron entidades esenciales o importantes, y el 77.8% de la ingeniería social fue phishing.',
+  items:[
+   {l:'Ataques DDoS',v:51.3,d:'51.3%',c:'--cyan',n:'Apoyados en flotas de dispositivos IoT con contraseñas de fábrica.'},
+   {l:'Acceso no autorizado',v:39.5,d:'39.5%',c:'--pink',n:'En el espionaje estatal, la explotación de vulnerabilidades fue el 60.4% de estos accesos.'},
+   {l:'Otros',v:9.2,d:'9.2%',c:'--violet',n:'Resto hasta completar el 100%.'}]},
+ {t:'El costo de recuperarse del ransomware',s:'Recuperación operativa, sin contar el rescate',src:'Sophos State of Ransomware 2026',type:'bars',
+  ins:'Cerca del 96% de las víctimas con tamaño conocido fueron pequeñas y medianas empresas.',
+  items:[
+   {l:'Con respaldos intactos (mediana)',v:375000,d:'USD 375 mil',c:'--lime',n:'Con copias disponibles, la recuperación cuesta una fracción.'},
+   {l:'Costo medio de recuperación',v:1700000,d:'USD 1.7 M',c:'--orange',n:'Promedio general, sin incluir rescates.'},
+   {l:'Con respaldos destruidos (mediana)',v:3000000,d:'USD 3 M',c:'--pink',n:'Ocho veces más cuando los atacantes destruyen las copias antes de cifrar.'}]}
+];
+let chartIdx=0;
+$('#chartTabs').innerHTML=DS.map((d,i)=>`<button class="tab" type="button" data-i="${i}" aria-pressed="${i===0}">${d.t}</button>`).join('');
+$('#chartTabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)renderChart(+b.dataset.i)});
+
+function donutHTML(d){
+  let cum=0;
+  const segs=d.items.map((it,k)=>{const s=`<circle class="seg" data-k="${k}" cx="50" cy="50" r="38" fill="none" pathLength="100" stroke="var(${it.c})" stroke-width="14" style="stroke-dasharray:${(it.v-0.8).toFixed(2)} ${(100-it.v+0.8).toFixed(2)};stroke-dashoffset:${-cum}"></circle>`;cum+=it.v;return s}).join('');
+  const leg=d.items.map((it,k)=>`<button class="leg" type="button" data-k="${k}"><i style="background:var(${it.c})"></i><span>${it.l}</span><b>${it.d}</b></button>`).join('');
+  return `<div class="donut"><div class="dwrap"><svg viewBox="0 0 100 100" role="img" aria-label="${d.t}"><g transform="rotate(-90 50 50)">${segs}</g></svg><div class="dcenter"><strong id="dcv"></strong><span id="dcl"></span></div></div><div class="legend">${leg}</div></div>`;
+}
+function barsHTML(d){
+  const max=Math.max(...d.items.map(x=>x.v));
+  return `<div class="bars">`+d.items.map((it,k)=>`<button class="br" type="button" data-k="${k}"><span class="br-top"><span>${it.l}</span><b>${it.d}</b></span><span class="br-track"><span class="br-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:var(${it.c})"></span></span></button>`).join('')+`</div>`;
+}
+function setActive(d,k){
+  const it=d.items[k];
+  $$('#chartStage [data-k]').forEach(el=>{
+    const on=+el.dataset.k===k;
+    el.classList.toggle('on',on);
+    if(el.classList.contains('seg'))el.classList.toggle('dim',!on);
+  });
+  if(d.type==='donut'){$('#dcv').textContent=it.d;$('#dcl').textContent=it.l}
+  $('#chartNote').textContent=it.l+': '+it.n;
+}
+function renderChart(i){
+  chartIdx=i;const d=DS[i];
+  $$('#chartTabs .tab').forEach((b,j)=>b.setAttribute('aria-pressed',String(j===i)));
+  $('#chartTitle').textContent=d.t;$('#chartSub').textContent=d.s;
+  $('#chartInsight').textContent=d.ins;$('#chartSrc').textContent='Fuente: '+d.src;
+  const st=$('#chartStage');
+  st.innerHTML=d.type==='donut'?donutHTML(d):barsHTML(d);
+  $$('#chartStage [data-k]').forEach(el=>{
+    const k=+el.dataset.k;
+    ['mouseenter','focus','click'].forEach(ev=>el.addEventListener(ev,()=>setActive(d,k)));
+  });
+  setActive(d,0);
+}
+renderChart(0);
+
+/* ---------- Pilares (datos compartidos) ---------- */
+const PIL=[
+ {t:'1 · Higiene personal',items:[
+  ['Passkeys y gestor de contraseñas','Usa passkeys en correo, banca y cuentas de trabajo: ligan la sesión al dominio auténtico y bloquean sitios falsos. No guardes contraseñas de empresa sin cifrar en el navegador personal.'],
+  ['MFA sin SMS','Cambia los códigos SMS por llaves físicas o una app autenticadora. Rechaza cualquier notificación push de acceso que tú no iniciaste.'],
+  ['Cero comandos copiados de sitios web','Nunca abras Windows + R ni la Terminal para pegar instrucciones de un CAPTCHA, un error del navegador o una actualización falsa.'],
+  ['Verifica llamadas, SMS y QR por otro canal','No escanees QR desconocidos para iniciar sesión ni instales AnyDesk, TeamViewer o NetSupport tras una llamada. Cuelga y confirma por un canal oficial.'],
+  ['Aísla el IoT y protege tus respaldos','Cambia las contraseñas de fábrica de routers y cámaras, conecta los dispositivos inteligentes a una red Wi-Fi de invitados y guarda respaldos en unidades externas desconectadas.']]},
+ {t:'2 · Identidad y soporte',items:[
+  ['MFA resistente al phishing (FIDO2)','Elimina contraseñas, SMS y push simples en cuentas administrativas, VPN/RDP y apps críticas. Bloquea protocolos heredados y el flujo de código de dispositivo en equipos no administrados.'],
+  ['Blinda los restablecimientos en soporte','No valides identidad con datos fáciles de obtener, como número de empleado o fecha de nacimiento. Exige video en vivo con prueba de presencia o autorización de dos responsables antes de emitir un Pase de Acceso Temporal.'],
+  ['Gobierna las identidades no humanas','Cada cuenta de servicio, app OAuth y agente de IA tiene un dueño humano. Cambia secretos estáticos por federación o certificados con rotación automática y desactiva apps sin actividad en 90 días.']]},
+ {t:'3 · Correo',items:[
+  ['SPF y DKIM completos','Autoriza solo tus servidores reales y termina SPF con -all, sin pasar de 10 búsquedas DNS. Activa la firma DKIM con rotación periódica de llaves.'],
+  ['DMARC hasta p=reject','Pasa de p=none a p=quarantine y luego a p=reject en 90 a 180 días, con sp=reject para subdominios. Bloquea más del 99% de los correos directos falsificados.']]},
+ {t:'4 · Parches y equipos',items:[
+  ['Prioriza parches con cuatro señales','Cruza la severidad (CVSS) con la probabilidad de explotación (EPSS), el catálogo KEV de CISA y la exposición real a internet. Reduce entre 70% y 85% la carga innecesaria.'],
+  ['72 horas máximo en activos de borde','Parcha en 72 horas cualquier falla explotada en VPN, firewalls, sistemas de identidad y servicios públicos, o aplica reglas temporales de WAF y aislamiento de red.'],
+  ['Endurece las estaciones de trabajo','Deshabilita Win + R con directivas de grupo para usuarios estándar, activa PowerShell en modo de lenguaje restringido, limita extensiones con listas blancas y revoca tokens ante filtraciones de stealers.']]},
+ {t:'5 · Software e IA',items:[
+  ['Protege paquetes y tuberías CI/CD','Cuarentena mínima de 72 horas para paquetes nuevos, sin scripts de instalación automáticos (--ignore-scripts), versiones fijadas con hashes, repositorios proxy internos, SBOM y llaves FIDO2 para mantenedores.'],
+  ['Controla el uso de IA','Usa IA corporativa con SSO y retención cero de entrenamiento, aplica DLP para bloquear código fuente y datos regulados, y audita con revisión humana y SAST/SCA el código que genera la IA.']]},
+ {t:'6 · Respaldos y respuesta',items:[
+  ['Respaldos 3-2-1-1-0','Tres copias, dos medios, una fuera del sitio, una inmutable o desconectada con credenciales separadas del directorio de producción, y cero errores comprobados con simulacros trimestrales de restauración.'],
+  ['Respuesta a incidentes 24/7','Alinea con NIST SP 800-61 Rev. 3 y CIS v8.1: EDR/MDR 24/7, bitácoras centralizadas con retención mínima de 90 días, priorización por impacto y las 56 salvaguardas de CIS IG1 en 180 días.']]}
+];
+const TOTAL=PIL.reduce((n,p)=>n+p.items.length,0);
+const done=new Set();
+let pIdx=0;
+
+function renderPTabs(){
+  $('#ptabs').innerHTML=PIL.map((p,i)=>{
+    const c=p.items.filter((_,j)=>done.has(i+'-'+j)).length;
+    return `<button class="tab" type="button" data-i="${i}" aria-pressed="${i===pIdx}">${p.t}<small>${c}/${p.items.length}</small></button>`;
+  }).join('');
+}
+function renderItems(){
+  $('#items').innerHTML=PIL[pIdx].items.map((it,j)=>{
+    const key=pIdx+'-'+j;
+    return `<label class="item" for="c-${key}"><input type="checkbox" id="c-${key}" data-key="${key}"${done.has(key)?' checked':''}><div><b>${it[0]}</b><span>${it[1]}</span></div></label>`;
+  }).join('');
+}
+function renderMeter(){
+  const n=done.size,pct=Math.round(n/TOTAL*100);
+  $('#mnum').textContent=n+' de '+TOTAL+' controles';
+  $('#mfill').style.width=pct+'%';
+  $('#mmsg').textContent=n===0?'Empieza por el pilar 1.':pct<35?'Buen inicio. Sigue con identidad y correo.':pct<70?'Vas bien. Falta cerrar parches y respaldos.':pct<100?'Casi listo. Revisa lo que falta.':'Escudo completo. Mantén los simulacros al día.';
+}
+function selectPillar(i){pIdx=i;renderPTabs();renderItems()}
+$('#ptabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)selectPillar(+b.dataset.i)});
+$('#items').addEventListener('change',e=>{
+  const k=e.target.dataset.key;if(!k)return;
+  e.target.checked?done.add(k):done.delete(k);
+  renderPTabs();renderMeter();
+});
+renderPTabs();renderItems();renderMeter();
+
+/* ---------- Ataques ---------- */
+const ATK=[
+ {n:'Explotación de vulnerabilidades',tag:'Acceso inicial n.º 1',c:'--pink',stat:'31%',sl:'de las brechas (DBIR 2026)',
+  d:'Los atacantes entran por fallos conocidos en dispositivos de borde, pasarelas VPN, servidores expuestos y aplicaciones web. El OWASP Top 10:2025 destaca la pérdida de control de acceso, la configuración de seguridad incorrecta y las fallas en la cadena de suministro.',
+  caso:'IBM X-Force ubica la explotación en el 40% de los incidentes que atendió a nivel global. En la UE es el 60.4% de los accesos no autorizados del espionaje estatal.',
+  def:'Parcha en 72 horas los activos de borde y prioriza con CVSS, EPSS y KEV.',pil:3},
+ {n:'Ingeniería social multicanal',tag:'Phishing · Vishing · Quishing · ClickFix',c:'--cyan',stat:'+502%',sl:'llamadas fraudulentas externas en Teams',
+  d:'Los atacantes pasaron del correo al teléfono, los códigos QR y las llamadas en plataformas de colaboración. Los proxies AiTM como Tycoon2FA roban contraseña, OTP y cookie de sesión a la vez. ClickFix creció ocho veces en 2026 y afectó a más de 1.1 millones de equipos: una falsa verificación CAPTCHA pide pegar un comando con Windows + R.',
+  caso:'Marks & Spencer, abril de 2025: Scattered Spider convenció por teléfono a una mesa de ayuda tercerizada de restablecer factores MFA. Resultado: 46 días sin ventas en línea y más de 131 millones de libras en costos directos.',
+  def:'Verifica por otro canal, usa passkeys y no pegues comandos que te dé una web.',pil:0},
+ {n:'Robo de credenciales e infostealers',tag:'Lumma · Vidar · RedLine',c:'--lime',stat:'95 días',sl:'antes del secuestro: la mitad de las víctimas de ransomware con credenciales filtradas ya las había perdido',
+  d:'Los infostealers sacan contraseñas y cookies guardadas en el navegador. A esto se suman las identidades no humanas: cuentas de servicio, llaves API, tokens OAuth y agentes de IA con permisos excesivos y secretos sin rotar.',
+  caso:'Snowflake: más de 165 organizaciones comprometidas con credenciales antiguas sin MFA. Change Healthcare: un portal Citrix sin MFA afectó a 192.7 millones de personas y costó más de USD 2,870 millones.',
+  def:'MFA resistente al phishing y un dueño humano para cada identidad no humana.',pil:1},
+ {n:'Ransomware con extorsión múltiple',tag:'Cifrado + robo de datos',c:'--orange',stat:'48%',sl:'de las brechas del DBIR 2026',
+  d:'Cifran la operación y antes roban datos sensibles para presionar por daño reputacional. El 88% de las detonaciones ocurre fuera del horario laboral y cerca del 96% de las víctimas con tamaño conocido son pymes.',
+  caso:'La recuperación cuesta USD 1.7 millones en promedio, sin contar el rescate. Si destruyen tus respaldos antes de cifrar, la mediana pasa de USD 375,000 a USD 3 millones.',
+  def:'Respaldos inmutables 3-2-1-1-0 y monitoreo 24/7.',pil:5},
+ {n:'Cadena de suministro y terceros',tag:'Software · Proveedores',c:'--violet',stat:'48%',sl:'de las brechas involucra a terceros (+60% anual)',
+  d:'Los atacantes roban credenciales de mantenedores de paquetes de código abierto y publican versiones maliciosas que miles de proyectos instalan sin saberlo.',
+  caso:'El paquete chalk fue comprometido en 16 minutos. En marzo de 2026, un script postinstall de axios robó llaves de nube y variables de entorno en decenas de países antes de ser retirado.',
+  def:'Cuarentena de 72 horas, --ignore-scripts, lockfiles con hashes y SBOM.',pil:4},
+ {n:'DDoS y botnets IoT',tag:'Denegación de servicio',c:'--cyan',stat:'51.3%',sl:'de los incidentes en la UE (ENISA)',
+  d:'Flotas de televisores inteligentes, routers y cámaras con contraseñas de fábrica sirven para saturar servicios. En España, el 85% de los equipos en botnets eran dispositivos IoT.',
+  caso:'En entornos con tensión geopolítica, los DDoS concentraron más de la mitad de los incidentes notificados en la Unión Europea.',
+  def:'Cambia las contraseñas de fábrica y aísla el IoT en una red de invitados.',pil:0},
+ {n:'IA y Shadow AI',tag:'WormGPT · FraudGPT',c:'--pink',stat:'16 h → 5 min',sl:'para crear un correo de suplantación personalizado',
+  d:'Los atacantes usan kits como WormGPT y FraudGPT. Dentro de la empresa, el uso de IA no autorizada se cuadruplicó en 2026 y el código fuente es lo que más se filtra.',
+  caso:'El 72% de los empleados usa cuentas personales sin control corporativo y más del 15% mantiene extensiones de IA no aprobadas que pueden capturar conversaciones confidenciales.',
+  def:'IA corporativa con SSO, DLP y revisión humana del código generado.',pil:4}
+];
+$('#agrid').innerHTML=ATK.map((a,i)=>`<details class="atk" id="atk-${i}"><summary><span class="chip" style="background:var(${a.c})">${a.tag}</span><h3>${a.n}</h3><div class="astat"><b style="color:var(${a.c})">${a.stat}</b><span>${a.sl}</span></div><span class="more">Ver detalle</span></summary><div class="abody"><p>${a.d}</p><div><h4>Caso real</h4><p>${a.caso}</p></div><div class="def"><h4>Defensa principal</h4><p>${a.def}</p></div><button class="go" type="button" data-pil="${a.pil}">Ir al pilar ${a.pil+1} de la guía</button></div></details>`).join('');
+$('#agrid').addEventListener('click',e=>{const b=e.target.closest('.go');if(b)goPillar(+b.dataset.pil)});
+let allOpen=false;
+$('#toggleAll').addEventListener('click',()=>{
+  allOpen=!allOpen;
+  $$('.atk').forEach(d=>d.open=allOpen);
+  $('#toggleAll').textContent=allOpen?'Contraer todo':'Expandir todo';
+});
+function goPillar(i){selectPillar(i);$('#guia').scrollIntoView({behavior:'smooth'})}
+
+/* ---------- Simulador de riesgos ---------- */
+const SC=[
+ {b:'Sin MFA resistente al phishing',big:'192.7 M',bl:'de personas afectadas en Change Healthcare',t:'Un portal remoto Citrix sin autenticación multifactor fue la puerta de entrada y el costo superó los USD 2,870 millones. En Snowflake, credenciales antiguas sin MFA dejaron expuestas a más de 165 organizaciones.',pil:1},
+ {b:'No parchar a tiempo',big:'&lt; 24 h',bl:'para tener un exploit funcional',t:'Publicada la falla, el exploit aparece en menos de un día y una carga en la nube recibe su primer ataque en 5.3 horas en promedio. La mediana corporativa para remediar es de 43 días.',pil:3},
+ {b:'Sin respaldos inmutables',big:'×8',bl:'el costo de recuperación',t:'Cuando los atacantes destruyen las copias antes de cifrar, el costo mediano pasa de USD 375,000 a USD 3 millones. Además, el 88% de las detonaciones ocurre fuera del horario laboral, cuando nadie vigila.',pil:5},
+ {b:'Pegar o hacer clic sin verificar',big:'8×',bl:'el crecimiento de ClickFix en 2026',t:'Más de 1.1 millones de equipos afectados. En las simulaciones de Verizon hay 40% más clics en vectores telefónicos que en el correo, y Marks & Spencer pasó 46 días sin ventas en línea por una llamada convincente.',pil:0},
+ {b:'Usar IA sin control',big:'×4',bl:'el uso de Shadow AI en 2026',t:'El 72% de los empleados usa cuentas personales de IA sin control corporativo, el código fuente es lo que más se filtra y más del 15% tiene extensiones de IA no aprobadas.',pil:4},
+ {b:'Dejar contraseñas de fábrica',big:'85%',bl:'de los equipos en botnets son IoT',t:'Routers, cámaras y televisores inteligentes con credenciales por defecto se convierten en armas de DDoS, que ya son más de la mitad de los incidentes notificados en la Unión Europea.',pil:0}
+];
+$('#opts').innerHTML=SC.map((s,i)=>`<button class="opt" type="button" data-i="${i}" aria-pressed="${i===0}">${s.b}</button>`).join('');
+function showSc(i){
+  const s=SC[i];
+  $$('#opts .opt').forEach((b,j)=>b.setAttribute('aria-pressed',String(j===i)));
+  $('#panel').innerHTML=`<span class="lab">Si ${s.b.charAt(0).toLowerCase()+s.b.slice(1)}</span><div class="big">${s.big}</div><p class="bl">${s.bl}</p><p class="t">${s.t}</p><button class="btn lime" type="button" data-pil="${s.pil}">Cómo evitarlo: pilar ${s.pil+1}</button>`;
+}
+$('#opts').addEventListener('click',e=>{const b=e.target.closest('.opt');if(b)showSc(+b.dataset.i)});
+$('#panel').addEventListener('click',e=>{const b=e.target.closest('[data-pil]');if(b)goPillar(+b.dataset.pil)});
+showSc(0);
+
+/* ---------- Hoja de ruta ---------- */
+const ROAD=[
+ [1,'MFA resistente al phishing (FIDO2 / passkeys) y blindaje de la mesa de ayuda','Días 1 a 30','Phishing AiTM, robo de credenciales, vishing y secuestro de cuentas'],
+ [2,'Respaldos inmutables 3-2-1-1-0 en un plano de identidad separado y monitoreo 24/7 (MDR)','Días 1 a 30','Ransomware con extorsión múltiple y destrucción de copias'],
+ [3,'Parcheo en menos de 72 horas de fallos CISA KEV en bordes y priorización con EPSS','Continuo (SLA &lt; 72 h)','Explotación de vulnerabilidades y compromiso del perímetro'],
+ [4,'Endurecimiento de endpoints: bloqueo de Win + R, PowerShell CLM, listas blancas de plugins','Días 31 a 60','ClickFix, infostealers (Lumma) y extensiones maliciosas de IA'],
+ [5,'SPF (-all), DKIM y DMARC en p=reject con subdominios','Días 31 a 180','Suplantación directa de dominio, phishing y fraude BEC'],
+ [6,'Cuarentena de paquetes (72 h), --ignore-scripts, SBOM y SSO/DLP para IA','Días 61 a 180','Ataques a la cadena de suministro (npm/OSS) y fugas por Shadow AI']
+];
+$('#road').innerHTML='<thead><tr><th>Prioridad</th><th>Control preventivo</th><th>Plazo</th><th>Amenazas que frena</th></tr></thead><tbody>'+ROAD.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="plazo">${r[2]}</td><td>${r[3]}</td></tr>`).join('')+'</tbody>';
+
+/* ---------- Quiz ---------- */
+const Q=[
+ {q:'Según el Verizon DBIR 2026, ¿cuál es el vector de acceso inicial más frecuente en las brechas?',o:['Phishing','Explotación de vulnerabilidades','Abuso de credenciales','Malware en memorias USB'],a:1,
+  e:'Con 31% de las brechas, la explotación de vulnerabilidades pasó por primera vez al primer lugar, por delante del phishing (16%).',r:'Ataques · explotación de vulnerabilidades',h:'#ataques'},
+ {q:'ClickFix engaña al usuario para que…',o:['Descargue un PDF con macros','Escanee un código QR','Comparta su código SMS','Pegue y ejecute un comando con Windows + R'],a:3,
+  e:'Una falsa verificación CAPTCHA copia un comando al portapapeles y pide ejecutarlo. Así se instalan infostealers como Lumma.',r:'Ataques · ingeniería social',h:'#ataques'},
+ {q:'¿Cuál es el costo promedio global de una brecha de datos en 2026, según IBM?',o:['USD 499 mil','USD 1.2 millones','USD 4.99 millones','USD 49.9 millones'],a:2,
+  e:'Son USD 4.99 millones y sube a USD 6 millones cuando el atacante usa inteligencia artificial.',r:'Panorama · costo de una brecha',h:'#panorama'},
+ {q:'¿Qué tipo de autenticación multifactor resiste el phishing?',o:['Código por SMS','Notificación push de aprobación','Pregunta de seguridad','Passkeys y llaves físicas FIDO2'],a:3,
+  e:'Vinculan la sesión al dominio auténtico, así que un sitio falso no obtiene nada utilizable.',r:'Guía · pilares 1 y 2',h:'#guia'},
+ {q:'¿Cuándo ocurre la mayoría de las detonaciones de ransomware?',o:['Fuera del horario laboral','En horario laboral','Solo en feriados oficiales','Durante las actualizaciones'],a:0,
+  e:'El 88% ocurre fuera del horario laboral. Por eso se recomienda vigilancia 24/7 con EDR/MDR.',r:'Riesgos · respaldos y monitoreo',h:'#riesgos'},
+ {q:'En la regla de respaldo 3-2-1-1-0, ¿qué representa el segundo «1»?',o:['Una copia fuera de las instalaciones','Una copia inmutable o desconectada','Un solo medio de almacenamiento','Un único administrador'],a:1,
+  e:'Es una copia inmutable (WORM) o desconectada, con credenciales separadas del directorio de producción. El «0» son errores comprobados con simulacros.',r:'Guía · regla 3-2-1-1-0',h:'#guia'},
+ {q:'¿En cuánto tiempo conviene parchar una falla explotada activamente en una VPN o un firewall?',o:['En 72 horas','En 30 días','En 43 días','En el siguiente trimestre'],a:0,
+  e:'La mediana corporativa es de 43 días, pero un exploit funcional puede existir en menos de 24 horas.',r:'Guía · pilar 4',h:'#guia'},
+ {q:'¿Qué política DMARC es la meta final para rechazar correos falsificados de tu dominio?',o:['p=none','p=quarantine','sp=none','p=reject'],a:3,
+  e:'Se llega por etapas, de p=none a p=quarantine y por último a p=reject, en 90 a 180 días.',r:'Guía · pilar 3',h:'#guia'},
+ {q:'Te llama alguien de «soporte técnico» y te pide instalar AnyDesk. ¿Qué haces?',o:['Lo instalo si conocen mi nombre','Pido que me envíen un enlace por SMS','Les doy mi código MFA para verificar','Cuelgo y confirmo por un canal oficial independiente'],a:3,
+  e:'Nunca instales herramientas de soporte remoto tras una llamada entrante. Verifica fuera de banda.',r:'Guía · pilar 1',h:'#guia'},
+ {q:'¿Cómo comprometió Scattered Spider a Marks & Spencer en 2025?',o:['Con un exploit de día cero','Con ingeniería social telefónica a una mesa de ayuda tercerizada','Con un ataque DDoS','Con una memoria USB infectada'],a:1,
+  e:'Lograron restablecer factores MFA por teléfono. El resultado fue de 46 días sin ventas en línea y más de 131 millones de libras en costos directos.',r:'Ataques · ingeniería social',h:'#ataques'}
+];
+let qi=0,score=0,locked=false,missed=[];
+const box=$('#quizBox');
+const LET=['A','B','C','D'];
+function bestGet(){try{return +localStorage.getItem('escudo-best')||0}catch(e){return 0}}
+function bestSet(n){try{localStorage.setItem('escudo-best',String(n))}catch(e){}}
+function renderQ(){
+  const q=Q[qi];locked=false;
+  box.innerHTML=`<div class="qtop"><span>Pregunta ${qi+1} de ${Q.length}</span><span>Aciertos: ${score}</span></div><div class="qtrack"><span class="qfill" style="width:${qi/Q.length*100}%"></span></div><h3 tabindex="-1" id="qh">${q.q}</h3><div class="qopts">${q.o.map((t,k)=>`<button class="qopt" type="button" data-k="${k}"><span class="l">${LET[k]}</span><span>${t}</span></button>`).join('')}</div><div id="qfb" aria-live="polite"></div>`;
+  $('#qh').focus({preventScroll:true});
+}
+function answer(k){
+  if(locked)return;locked=true;
+  const q=Q[qi],ok=k===q.a;
+  if(ok)score++;else missed.push(qi);
+  $$('.qopt',box).forEach((b,j)=>{
+    b.disabled=true;
+    if(j===q.a)b.classList.add('ok');
+    else if(j===k)b.classList.add('bad');
+  });
+  $('#qfb').innerHTML=`<div class="fb"><b class="${ok?'ok':'bad'}">${ok?'Correcto':'Casi. La respuesta correcta es la '+LET[q.a]}</b><span>${q.e}</span></div><button class="btn qnext" type="button" id="qn">${qi===Q.length-1?'Ver resultado':'Siguiente pregunta'}</button>`;
+  $('#qn').focus();
+}
+function renderEnd(){
+  const best=Math.max(bestGet(),score);bestSet(best);
+  const tier=score>=9?'Escudo de titanio':score>=7?'Defensor sólido':score>=5?'En camino':'Zona de riesgo';
+  const msg=score>=9?'Dominas los puntos clave del reporte.':score>=7?'Buen nivel. Repasa los puntos de abajo para cerrar los huecos.':score>=5?'Tienes la base. Revisa la guía y vuelve a intentarlo.':'Conviene repasar el reporte completo antes de otro intento.';
+  box.innerHTML=`<div class="qtop"><span>Resultado</span><span>Mejor marca: ${best}/${Q.length}</span></div><div class="qtrack"><span class="qfill" style="width:100%"></span></div><p class="score">${score}/${Q.length}</p><p class="tier">${tier}</p><p class="muted" style="margin-top:6px">${msg}</p>`+
+  (missed.length?`<div class="review"><b>Repasa estos puntos</b>${missed.map(i=>`<div class="rev"><b>${Q[i].q}</b>Respuesta correcta: ${Q[i].o[Q[i].a]}. ${Q[i].e} <a href="${Q[i].h}">${Q[i].r}</a></div>`).join('')}</div>`:'<p style="margin-top:18px">Sin errores. Compártelo con quien aún no conoce estos riesgos.</p>')+
+  `<div class="cta"><button class="btn" type="button" id="qr">Repetir el quiz</button><a class="btn ghost" href="#guia">Ir a la guía</a></div>`;
+}
+box.addEventListener('click',e=>{
+  const o=e.target.closest('.qopt');if(o){answer(+o.dataset.k);return}
+  if(e.target.id==='qn'){qi++;qi<Q.length?renderQ():renderEnd();return}
+  if(e.target.id==='qr'){qi=0;score=0;missed=[];renderQ()}
+});
+renderQ();
+
+/* ---------- Navegación activa ---------- */
+const links=$$('.links a');
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(es=>{
+    es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id))}});
+  },{rootMargin:'-45% 0px -50% 0px'});
+  ['panorama','ataques','riesgos','guia','quiz'].forEach(id=>io.observe(document.getElementById(id)));
+}
+})();
+</script>
